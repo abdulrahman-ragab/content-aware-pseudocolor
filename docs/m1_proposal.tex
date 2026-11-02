@@ -8,6 +8,9 @@
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{placeins}
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{array}
@@ -132,9 +135,37 @@ or useful? How does it connect to material from the course
 \section{Related Work}
 \label{sec:related}
 
-Summarize at least 4 references, at least 2 of which should be
-from 2023--2026. Use the table below as a starting organizer,
-then write 1--2 paragraphs of prose connecting them to your plan.
+Traditional pseudo-color mapping is a widely used image-processing
+technique that transforms grayscale images into color representations
+by assigning specific colors to different intensity levels. This
+process is commonly implemented using a Look-Up Table (LUT), in which
+each grayscale intensity is associated with a predefined RGB value.
+Consequently, for an 8-bit grayscale image, a LUT can contain 256 color
+entries, allowing each pixel to be mapped directly to its corresponding
+color without modifying the source intensity values. Different
+colormaps, such as Jet, Viridis, and other sequential color schemes,
+can be employed to represent intensity variations and improve the
+visual interpretation of image structures. However, the effectiveness
+of this technique strongly depends on the perceptual properties of
+the selected colormap.
+
+\citet{borland2007rainbow} highlighted several limitations of the commonly
+used rainbow colormap, including non-uniform perceptual transitions
+and misleading visual gradients, which can negatively affect data
+interpretation. \citet{zhou2016survey} further reviewed
+different colormap generation techniques and emphasized the relationship
+between colormap design and effective data visualization. More recently,
+\citet{ware2023rainbow} revisited the limitations of rainbow colormaps
+and demonstrated that their effectiveness depends on the visualization
+task and the type of information being examined. Despite the advantages
+of fixed LUT-based mapping in providing a simple and computationally
+efficient visualization method, its color assignment depends exclusively
+on grayscale intensity rather than image content or regional importance.
+Therefore, pixels with identical intensities receive identical colors
+regardless of their anatomical location or relevance. This limitation
+motivates the investigation of content-aware pseudo-color mapping
+approaches that incorporate image saliency to adapt color representation
+and provide greater visual emphasis on potentially important regions.
 
 \begin{table}[htbp]
 \centering
@@ -154,9 +185,14 @@ then write 1--2 paragraphs of prose connecting them to your plan.
 \textbf{Relevance to this project} \\
 \midrule
 
-\citep{example2024} & 2024 & \todo{one sentence} \\
+\citep{borland2007rainbow} & 2007 &
+Explains perceptual pitfalls of rainbow colormaps. \\
 
-\citep{example2018} & 2018 & \todo{one sentence} \\
+\citep{zhou2016survey} & 2016 &
+Surveys colormap generation and visualization design. \\
+
+\citep{ware2023rainbow} & 2023 &
+Examines task-dependent strengths and limitations of rainbow colormaps. \\
 
 \bottomrule
 \end{tabularx}
@@ -169,9 +205,47 @@ then write 1--2 paragraphs of prose connecting them to your plan.
 \section{Dataset \& Baseline Plan}
 \label{sec:data}
 
-Name the public dataset(s), give exact size/subset you will use,
-and the license. State exactly which baseline (classical or
-prior learned method) you will reproduce and compare against.
+\subsection{Dataset and Patient-Level Selection}
+
+We will use the publicly available NIH Chest X-ray dataset distributed
+through Kaggle. The dataset contains 112,120 chest radiographs from
+30,805 unique patients, provided as $1024 \times 1024$ images with
+image-level metadata, including patient identifiers, follow-up indices,
+view positions, and finding labels. The labels cover 14 thoracic
+conditions and a ``No Finding'' category; multiple findings may occur
+in one image.Kaggle lists the dataset under the CC0~1.0 public-domain dedication. We will retain the
+source documentation, acknowledge the dataset creators, make no attempt
+to re-identify patients, and present our results as visualization
+experiments rather than clinically validated diagnostic findings.
+
+To reduce repeated observations of the same patient and keep the study
+manageable, we will retain only the first available image for each
+patient. Operationally, we will sort records within each patient by
+\texttt{Follow-up \#} in ascending order, breaking ties by
+\texttt{Image Index}, and retain the first record. This is a reproducible
+index-based definition, not an independently verified acquisition date.
+Size is 30,805 images. The selected
+patient identifiers, filenames, and selection rule will be saved in a
+cohort manifest. A python script is made to automate this selection and save the manifest.
+
+\subsection{Training, Validation, and Test Protocol}
+
+The selected patients will be divided into 70\% training, 20\% validation,
+and 10\% testing. We will shuffle a
+deterministically ordered patient list, assign
+$\lfloor 0.70N \rfloor$ patients to training and
+$\lfloor 0.20N \rfloor$ to validation, and assign the remainder to
+testing, where $N$ is the verified cohort size. For $N=30{,}805$, this
+gives 21,563 training, 6,161 validation, and 3,081 test images. Patient
+identifiers will be disjoint across the three splits, and the assignment
+will be saved rather than regenerated during each experiment.
+
+Training data will be used for any learned components or fitted
+preprocessing parameters, validation data for selecting hyperparameters,
+and test data only for the final comparison. The fixed-LUT baseline
+itself requires no training. Both methods will be evaluated on the same
+held-out images; finding-label and view-position distributions will be
+reported for each split to make potential imbalances visible.
 
 \begin{table}[htbp]
 \centering
@@ -191,13 +265,102 @@ prior learned method) you will reproduce and compare against.
 \textbf{Link} \\
 \midrule
 
-\todo{name} &
-\todo{e.g., 800 train / 100 val crops} &
-\todo{URL} \\
+NIH Chest X-rays &
+One image per patient: expected $N=30{,}805$.
+Custom 70/20/10 patient-level split. &
+\href{https://www.kaggle.com/datasets/nih-chest-xrays/data}
+{Kaggle dataset (CC0~1.0)} \\
 
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\subsection{Fixed-LUT Viridis Baseline}
+
+We will compare the proposed saliency-aware mapping against a fixed
+Viridis lookup table. The baseline uses OpenCV's
+\texttt{cv2.applyColorMap} with \texttt{cv2.COLORMAP\_VIRIDIS}: each
+8-bit intensity in $[0,255]$ is mapped to a fixed RGB color independently
+of image content. It introduces no learned parameters, saliency
+weighting or other content-aware adjustments.
+Native resolution and original pixel intensities are preserved.
+
+An initial baseline module has already been implemented and run on
+10 images from 10 different patients. Its outputs have been checked
+pixel-for-pixel against the fixed LUT.
+The baseline module accepts
+8-bit grayscale PNGs, including grayscale stored as identical RGB
+channels with a fully opaque alpha channel.
+The module produces color PNGs, grayscale--Viridis comparison
+figures with an intensity colorbar, and a completed-run manifest recording
+input filenames, dimensions, library versions, and processing settings.
+
+Figure~\ref{fig:viridis-baseline-samples} shows three initial baseline
+examples. These illustrate the fixed intensity-to-color mapping, not
+evidence of improved diagnostic performance.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,height=0.22\textheight,keepaspectratio]
+{images/00000001_000.png}\par\medskip
+\includegraphics[width=\linewidth,height=0.22\textheight,keepaspectratio]
+{images/00000002_000.png}\par\medskip
+\includegraphics[width=\linewidth,height=0.22\textheight,keepaspectratio]
+{images/00000003_000.png}
+\caption{Initial fixed-LUT baseline samples for images
+\texttt{00000001\_000.png}, \texttt{00000002\_000.png}, and
+\texttt{00000003\_000.png} (top to bottom). Each example shows the
+original grayscale image on the left and its fixed Viridis mapping
+on the right, with a colorbar for intensities from 0 to 255.}
+\label{fig:viridis-baseline-samples}
+\end{figure}
+\FloatBarrier
+
+\subsection{Planned Data and Comparison Pipeline}
+
+Figure~\ref{fig:data-pipeline} summarizes the planned pipeline.
+The fixed Viridis baseline is implemented; the remaining integration
+components are planned work.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=6mm and 12mm,
+    stage/.style={draw, rounded corners, align=center,
+        text width=5.5cm, minimum height=10mm, font=\small},
+    branch/.style={stage, text width=5cm},
+    flow/.style={-{Latex}, thick}
+]
+\node[stage] (drive) at (0,0)
+    {Google Drive\\Images, metadata, cohort and split manifests};
+\node[stage] (import) at (0,-1.7)
+    {Data import\\Fetch, verify filenames, cache locally};
+\node[stage] (preprocess) at (0,-3.4)
+    {Image Pre-processing\\and Validate};
+\node[branch] (baseline) at (-3.2,-5.5)
+    {Fixed-LUT baseline\\Original intensities $\rightarrow$ Viridis};
+\node[branch] (saliency) at (3.2,-5.5)
+    {Saliency algorithm};
+\node[branch] (mapping) at (3.2,-7.8)
+    {Content-aware mapping\\Original image + saliency map};
+\node[stage] (visual) at (0,-10.1)
+    {Evaluation handoff};
+\node[stage] (evaluation) at (0,-11.8)
+    {Visualization\\Grayscale, baseline, saliency and proposed output};
+
+\draw[flow] (drive) -- (import);
+\draw[flow] (import) -- (preprocess);
+\draw[flow] (preprocess) -- (baseline);
+\draw[flow] (preprocess) -- (saliency);
+\draw[flow] (saliency) -- (mapping);
+\draw[flow] (baseline) |- (visual.west);
+\draw[flow] (mapping) |- (visual.east);
+\draw[flow] (visual) -- (evaluation);
+\end{tikzpicture}
+\caption{Planned data and comparison pipeline.}
+\label{fig:data-pipeline}
+\end{figure}
+\FloatBarrier
 
 % ============================================================
 % 4. PROPOSED METHOD
