@@ -8,9 +8,6 @@
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
-\usepackage{placeins}
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{array}
@@ -26,6 +23,10 @@
     urlcolor=blue!50!black
 }
 
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+\usepackage{placeins}
+
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 
 
@@ -37,7 +38,7 @@
 \begin{titlepage}
     \centering
 
-    \includegraphics[width=4.5cm]{asu_logo.png}\\[1cm]
+    \includegraphics[width=4.5cm]{images/asu_logo.png}\\[1cm]
 
     {\Huge \textbf{Content-Aware Pseudo-Color Mapping for
     Scientific/Medical Grayscale Images}}\\[1.5cm]
@@ -124,9 +125,7 @@ methods and findings.}
 \section{Problem Statement \& Motivation}
 \label{sec:motivation}
 
-What image-processing problem are you solving? Why is it interesting
-or useful? How does it connect to material from the course
-(name the week/topic)? 1 paragraph.
+Grayscale images are widely used in scientific and medical applications to represent information through variations in intensity. However, interpreting subtle intensity differences and identifying important image structures can be challenging, particularly when relevant features have intensity values similar to their surrounding regions. Pseudo-color mapping addresses this limitation by assigning colors to grayscale intensity levels, potentially improving visual differentiation and supporting image interpretation. Conventional approaches, such as intensity slicing using fixed Look-Up Tables (LUTs), assign colors according to predefined intensity-to-color relationships without considering the actual image content or the relative importance of different regions. Consequently, these approaches may not sufficiently emphasize task-relevant structures or regions of interest. This project investigates content-aware pseudo-color mapping, particularly saliency-guided mapping, as an alternative to conventional fixed-LUT techniques. The main objective is to investigate whether incorporating image saliency into the color-mapping process can improve the visual emphasis and localization of relevant features while maintaining desirable perceptual properties. The project is connected to Week 10 of the Digital Image Processing course, which covers pseudo-color processing, particularly HSI-based pseudo-color representation and intensity slicing. Building upon these concepts, the project extends conventional intensity-based color assignment by incorporating image-content information into the mapping process. Medical grayscale images, specifically chest X-ray images, will serve as the application domain for evaluating the proposed approach.
 
 % ============================================================
 % 2. RELATED WORK
@@ -134,38 +133,6 @@ or useful? How does it connect to material from the course
 
 \section{Related Work}
 \label{sec:related}
-
-Traditional pseudo-color mapping is a widely used image-processing
-technique that transforms grayscale images into color representations
-by assigning specific colors to different intensity levels. This
-process is commonly implemented using a Look-Up Table (LUT), in which
-each grayscale intensity is associated with a predefined RGB value.
-Consequently, for an 8-bit grayscale image, a LUT can contain 256 color
-entries, allowing each pixel to be mapped directly to its corresponding
-color without modifying the source intensity values. Different
-colormaps, such as Jet, Viridis, and other sequential color schemes,
-can be employed to represent intensity variations and improve the
-visual interpretation of image structures. However, the effectiveness
-of this technique strongly depends on the perceptual properties of
-the selected colormap.
-
-\citet{borland2007rainbow} highlighted several limitations of the commonly
-used rainbow colormap, including non-uniform perceptual transitions
-and misleading visual gradients, which can negatively affect data
-interpretation. \citet{zhou2016survey} further reviewed
-different colormap generation techniques and emphasized the relationship
-between colormap design and effective data visualization. More recently,
-\citet{ware2023rainbow} revisited the limitations of rainbow colormaps
-and demonstrated that their effectiveness depends on the visualization
-task and the type of information being examined. Despite the advantages
-of fixed LUT-based mapping in providing a simple and computationally
-efficient visualization method, its color assignment depends exclusively
-on grayscale intensity rather than image content or regional importance.
-Therefore, pixels with identical intensities receive identical colors
-regardless of their anatomical location or relevance. This limitation
-motivates the investigation of content-aware pseudo-color mapping
-approaches that incorporate image saliency to adapt color representation
-and provide greater visual emphasis on potentially important regions.
 
 \begin{table}[htbp]
 \centering
@@ -194,9 +161,60 @@ Surveys colormap generation and visualization design. \\
 \citep{ware2023rainbow} & 2023 &
 Examines task-dependent strengths and limitations of rainbow colormaps. \\
 
+%%% Kiro
+
+\citep{bujack2018colormaps} & 2018 &
+Provides a theoretical foundation for evaluating colormaps using perceptual uniformity, discriminability, and luminance properties. \\
+
+\citep{qutbi2024colormaps} & 2024 &
+	Demonstrates the application of perceptual metrics to quantitatively evaluate colormaps in medical-image visualization.\\
+
+\citep{bylinskii2019saliency} & 2019 &
+Reviews saliency evaluation metrics, supporting the selection of quantitative measures for ROI localization assessment. \\
+
 \bottomrule
 \end{tabularx}
 \end{table}
+
+% LUT
+Traditional pseudo-color mapping is a widely used image-processing
+technique that transforms grayscale images into color representations
+by assigning specific colors to different intensity levels. This
+process is commonly implemented using a Look-Up Table (LUT), in which
+each grayscale intensity is associated with a predefined RGB value.
+Consequently, for an 8-bit grayscale image, a LUT can contain 256 color
+entries, allowing each pixel to be mapped directly to its corresponding
+color without modifying the source intensity values. Different
+colormaps, such as Jet, Viridis, and other sequential color schemes,
+can be employed to represent intensity variations and improve the
+visual interpretation of image structures. However, the effectiveness
+of this technique strongly depends on the perceptual properties of
+the selected colormap.
+\citet{borland2007rainbow} highlighted several limitations of the commonly
+used rainbow colormap, including non-uniform perceptual transitions
+and misleading visual gradients, which can negatively affect data
+interpretation. \citet{zhou2016survey} further reviewed
+different colormap generation techniques and emphasized the relationship
+between colormap design and effective data visualization. More recently,
+\citet{ware2023rainbow} revisited the limitations of rainbow colormaps
+and demonstrated that their effectiveness depends on the visualization
+task and the type of information being examined. Despite the advantages
+of fixed LUT-based mapping in providing a simple and computationally
+efficient visualization method, its color assignment depends exclusively
+on grayscale intensity rather than image content or regional importance.
+Therefore, pixels with identical intensities receive identical colors
+regardless of their anatomical location or relevance. This limitation
+motivates the investigation of content-aware pseudo-color mapping
+approaches that incorporate image saliency to adapt color representation
+and provide greater visual emphasis on potentially important regions.\\
+
+% Content aware
+%%%%% Kiro
+
+% Evalution
+Previous studies have established several perceptual properties that are important for evaluating the effectiveness of colormaps. \cite{bujack2018colormaps} introduced a theoretical framework for assessing continuous colormaps, discussing properties such as perceptual uniformity, discriminability, and luminance behavior. These properties provide a foundation for evaluating whether a colormap represents grayscale intensity variations consistently and avoids misleading visual differences. In the context of medical imaging, \cite{qutbi2024colormaps} investigated the quantitative performance of commonly used colormaps using perceptual metrics, demonstrating the relevance of evaluating color representations according to their perceptual characteristics in medical-image visualization. Together, these studies motivate the use of intrinsic metrics to assess the perceptual quality of the proposed pseudo-color mapping against a conventional fixed-LUT baseline.
+Beyond intrinsic color properties, evaluating content-aware mapping requires investigating whether the emphasized regions correspond to task-relevant image structures. \cite{bylinskii2019saliency} examined different evaluation metrics for visual saliency models and discussed how their effectiveness depends on the characteristics of the saliency task and its ground-truth annotations. This provides a basis for selecting appropriate quantitative measures for evaluating saliency-based approaches. Building on these studies, the proposed work combines intrinsic colormap evaluation with ROI localization against available bounding-box annotations from the NIH Chest X-ray14 dataset. This allows the comparison to consider both the perceptual properties of the generated representations and their ability to emphasize annotated regions of interest.
+
 
 % ============================================================
 % 3. DATASET & BASELINE PLAN
@@ -205,9 +223,9 @@ Examines task-dependent strengths and limitations of rainbow colormaps. \\
 \section{Dataset \& Baseline Plan}
 \label{sec:data}
 
-\subsection{Dataset and Patient-Level Selection}
+\subsection{Dataset Description and Patient-Level Selection}
 
-We will use the publicly available NIH Chest X-ray dataset distributed
+We will use the publicly available NIH Chest X-ray dataset \cite{wang2017chestxray8} distributed
 through Kaggle. The dataset contains 112,120 chest radiographs from
 30,805 unique patients, provided as $1024 \times 1024$ images with
 image-level metadata, including patient identifiers, follow-up indices,
@@ -316,11 +334,15 @@ on the right, with a colorbar for intensities from 0 to 255.}
 \end{figure}
 \FloatBarrier
 
-\subsection{Planned Data and Comparison Pipeline}
 
-Figure~\ref{fig:data-pipeline} summarizes the planned pipeline.
-The fixed Viridis baseline is implemented; the remaining integration
-components are planned work.
+% ============================================================
+% 4. PROPOSED METHOD
+% ============================================================
+
+\section{Proposed Method}
+\label{sec:method}
+\subsection{Overview Architecture}
+Figure~\ref{fig} illustrates the overall architecture of the proposed pseudo-color mapping framework, starting with the chest X-ray images, metadata, and patient-level cohort and split manifests stored in Google Drive. The images are imported, verified against the dataset records, cached locally, and preprocessed before being passed through two parallel processing paths. The first path implements the conventional fixed-LUT baseline, where the original grayscale intensities are directly mapped to colors using the Viridis colormap. The second path represents the proposed content-aware approach, in which a saliency estimation algorithm generates a saliency map that is subsequently combined with the original grayscale image to produce a content-aware colored representation. Finally, the outputs from both paths are forwarded to a common evaluation stage, where the original grayscale images, baseline results, and proposed outputs are visualized and compared using the defined evaluation criteria. This architecture enables a consistent comparison between conventional intensity-based mapping and the proposed saliency-guided approach using the same input images.
 
 \begin{figure}[htbp]
 \centering
@@ -357,21 +379,12 @@ components are planned work.
 \draw[flow] (mapping) |- (visual.east);
 \draw[flow] (visual) -- (evaluation);
 \end{tikzpicture}
-\caption{Planned data and comparison pipeline.}
+\caption{Overall architecture of the proposed content-aware pseudo-color mapping framework and its evaluation pipeline.}
 \label{fig:data-pipeline}
 \end{figure}
 \FloatBarrier
 
-% ============================================================
-% 4. PROPOSED METHOD
-% ============================================================
-
-\section{Proposed Method}
-\label{sec:method}
-
-Sketch your planned approach: architecture diagram or pseudocode,
-what is novel or extended relative to the baseline, and why you
-expect it to work.
+%% Kiro
 
 % ============================================================
 % 5. FEASIBILITY & COMPUTE PLAN
@@ -380,9 +393,12 @@ expect it to work.
 \section{Feasibility \& Compute Plan}
 \label{sec:feasibility}
 
-State your compute tier (CPU-OK / GPU-light), expected training
-time per experiment, and confirm this fits a laptop-class machine
-within the project window.
+The project is designed to be CPU-OK and feasible on a laptop-class machine without requiring a dedicated GPU. The pseudo-color mapping operations, including fixed-LUT mapping and saliency-guided color assignment, will primarily use CPU-based image processing with Python and standard image-processing libraries. \\
+
+The initial fine-tuning experiments are estimated to require approximately 4 to 8 hours per experiment using CPU-based processing, assuming 5 to10 training epochs. Grad-CAM generation and subsequent pseudo-color mapping and evaluation operations will require additional processing time, depending on the number of images evaluated.\\
+
+The proposed implementation and evaluation are therefore considered feasible within the project window using a laptop-class machine.
+
 
 % ------------------------------------------------------------
 % 5.1 Minimum Viable Deliverable
@@ -390,8 +406,15 @@ within the project window.
 
 \subsection{Minimum Viable Deliverable (MVP)}
 
-The smallest version of this project that still produces a valid,
-reportable comparison against the baseline.
+The minimum viable deliverable will consist of:
+\begin{itemize}[leftmargin=*]
+
+    \item Preprocessing a manageable subset of the NIH Chest X-ray14 dataset.
+    \item Implementing conventional fixed-LUT pseudo-color mapping as the baseline.
+    \item Implementing a saliency-guided content-aware pseudo-color mapping using Grad-CAM to estimate salient regions.
+    \item Generating and comparing both representations using identical grayscale input images.
+    \item Evaluating both mapping strategies using intrinsic color-mapping quality metrics and conducting ROI localization evaluation against the available ground-truth bounding-box annotations.
+\end{itemize}
 
 % ------------------------------------------------------------
 % 5.2 Stretch Goal
@@ -399,7 +422,13 @@ reportable comparison against the baseline.
 
 \subsection{Stretch Goal}
 
-\todo{What you will attempt if the MVP is on track by Week 5--6.}
+If the MVP is completed on schedule, the following additional objectives will be considered:
+\begin{itemize}[leftmargin=*]
+
+    \item Implementing and evaluating a grayscale-trained image-classification experiment using three input representations: grayscale, fixed-LUT pseudo-color, and content-aware pseudo-color images.
+    \item Conducting a structured human-centered experiment to compare task accuracy, response time, perceived visibility, and participant confidence.
+    \item Investigating different saliency-generation techniques or mapping configurations to determine their influence on the evaluation results.
+\end{itemize}
 
 % ============================================================
 % 6. RISK ASSESSMENT
@@ -407,12 +436,19 @@ reportable comparison against the baseline.
 
 \section{Risk Assessment}
 \label{sec:risk}
-
+The following risks have been identified, together with their proposed mitigation strategies:
 \begin{itemize}[leftmargin=*]
 
-    \item \todo{Risk 1 and its mitigation / fallback.}
+    \item \textbf{Risk 1. Weakly Supervised Dataset Labels:} The NIH Chest X-ray14 dataset contains disease labels extracted from radiological reports using Natural Language Processing (NLP), with an expected accuracy of approximately 90\%. Although these labels are reasonably accurate, some labeling errors may exist. Since disease classification is not the primary objective of this project, these labels will be treated as provided ground-truth labels without attempting to validate or correct them.\\ 
+    \textit{Mitigation}: Focus the evaluation on comparing the pseudo-color mapping approaches rather than disease classification accuracy. Clearly acknowledge the potential labeling inaccuracies as a dataset limitation.
 
-    \item \todo{Risk 2 and its mitigation / fallback.}
+    \item \textbf{Risk 2. Limited ROI Annotations:} Ground-truth bounding-box annotations are available for only a small subset of approximately 1,000 images in the NIH Chest X-ray14 dataset. This may limit the number of samples available for quantitative ROI localization evaluation.\\ 
+    \textit{Mitigation/Fallback}: Use the available annotated subset and clearly report its size and limitations. The ROI localization experiment will be treated as an evaluation on the annotated subset rather than the entire dataset.
+
+    \item \textbf{Risk 3. Human-Study Participation:} Limited participant availability or inconsistent responses may affect the reliability of the human-centered evaluation.\\ 
+    \textit{Mitigation/Fallback}: Prepare a simple structured experiment with predefined visual tasks and consistent presentation conditions. If participant recruitment becomes impractical, prioritize the quantitative evaluation methods included in the MVP.
+
+
 
 \end{itemize}
 
@@ -421,6 +457,7 @@ reportable comparison against the baseline.
 % ============================================================
 
 \section{Work Breakdown}
+The project is divided among three students according to the main development and evaluation responsibilities. The tasks are organized into three milestones to ensure that dataset preparation, algorithm development, and evaluation progress in parallel. 
 \label{sec:workbreakdown}
 
 \begin{table}[htbp]
@@ -446,23 +483,32 @@ reportable comparison against the baseline.
 \midrule
 
 M1 (Wk 3) &
-\todo{task} &
-\todo{task} &
-\todo{task} \\
+Dataset investigation, data requirements, and baseline research. &
+
+Literature review and investigation of content-aware mapping approaches. &
+
+Literature review and development of the evaluation framework and criteria.  \\
 
 M2 (Wk 6) &
-\todo{task} &
-\todo{task} &
-\todo{task} \\
+Dataset downloading, preprocessing, splitting, and implementation of the fixed-LUT baseline. &
+
+Implementation of the proposed saliency-guided content-aware mapping approach. &
+
+Implementation of intrin sic evaluation metrics and ROI localization evaluation. \\
 
 M3 (Wk 9) &
-\todo{task} &
-\todo{task} &
-\todo{task} \\
+Dataset preparation sup port, baseline validation, and classification data preparation. &
+
+Finalization and validation of the proposed mapping algorithm and generated outputs.&
+
+Downstream-task evaluation, analysis of quantitative results, and human
+centered evaluation if feasible. \\
 
 \bottomrule
 \end{tabularx}
 \end{table}
+All team members will contribute to integration, comparative analysis, interpretation of results, and final report preparation
+
 
 % ============================================================
 % REFERENCES
