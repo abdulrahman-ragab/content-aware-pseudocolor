@@ -15,7 +15,10 @@
 \usepackage[round]{natbib}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{wrapfig}
 \usepackage{hyperref}
+\usepackage{float}
+
 \hypersetup{
     colorlinks=true,
     linkcolor=blue!50!black,
@@ -130,7 +133,7 @@ Grayscale images are widely used in scientific and medical applications to repre
 % ============================================================
 % 2. RELATED WORK
 % ============================================================
-
+\newpage
 \section{Related Work}
 \label{sec:related}
 
@@ -161,13 +164,13 @@ Surveys colormap generation and visualization design. \\
 \citep{ware2023rainbow} & 2023 &
 Examines task-dependent strengths and limitations of rainbow colormaps. \\
 
-%%% Kiro
+\citep{Selvaraju2020GradCAM} & 2020 & Provides a foundation in visual explainability of deep learning models through gradient-based localization of image regions influencing predictions. \\
 
 \citep{bujack2018colormaps} & 2018 &
 Provides a theoretical foundation for evaluating colormaps using perceptual uniformity, discriminability, and luminance properties. \\
 
 \citep{qutbi2024colormaps} & 2024 &
-	Demonstrates the application of perceptual metrics to quantitatively evaluate colormaps in medical-image visualization.\\
+    Demonstrates the application of perceptual metrics to quantitatively evaluate colormaps in medical-image visualization.\\
 
 \citep{bylinskii2019saliency} & 2019 &
 Reviews saliency evaluation metrics, supporting the selection of quantitative measures for ROI localization assessment. \\
@@ -208,13 +211,12 @@ motivates the investigation of content-aware pseudo-color mapping
 approaches that incorporate image saliency to adapt color representation
 and provide greater visual emphasis on potentially important regions.\\
 
-% Content aware
-%%%%% Kiro
+%saliency
+The ChestX-ray8 paper \cite{Wang2017ChestXRay8} provides the dataset foundation for our project, introducing a large-scale chest X-ray database with disease labels that will be used to train the CNN-based classification model. The Grad-CAM paper \cite{Selvaraju2020GradCAM} provides the explainability method, allowing us to generate saliency maps that highlight image regions contributing to the classifier's predictions. Together, these references support disease classification and saliency estimation, which form the basis of our proposed content-aware pseudo-color mapping approach.\\
 
 % Evalution
 Previous studies have established several perceptual properties that are important for evaluating the effectiveness of colormaps. \cite{bujack2018colormaps} introduced a theoretical framework for assessing continuous colormaps, discussing properties such as perceptual uniformity, discriminability, and luminance behavior. These properties provide a foundation for evaluating whether a colormap represents grayscale intensity variations consistently and avoids misleading visual differences. In the context of medical imaging, \cite{qutbi2024colormaps} investigated the quantitative performance of commonly used colormaps using perceptual metrics, demonstrating the relevance of evaluating color representations according to their perceptual characteristics in medical-image visualization. Together, these studies motivate the use of intrinsic metrics to assess the perceptual quality of the proposed pseudo-color mapping against a conventional fixed-LUT baseline.
 Beyond intrinsic color properties, evaluating content-aware mapping requires investigating whether the emphasized regions correspond to task-relevant image structures. \cite{bylinskii2019saliency} examined different evaluation metrics for visual saliency models and discussed how their effectiveness depends on the characteristics of the saliency task and its ground-truth annotations. This provides a basis for selecting appropriate quantitative measures for evaluating saliency-based approaches. Building on these studies, the proposed work combines intrinsic colormap evaluation with ROI localization against available bounding-box annotations from the NIH Chest X-ray14 dataset. This allows the comparison to consider both the perceptual properties of the generated representations and their ability to emphasize annotated regions of interest.
-
 
 % ============================================================
 % 3. DATASET & BASELINE PLAN
@@ -334,15 +336,16 @@ on the right, with a colorbar for intensities from 0 to 255.}
 \end{figure}
 \FloatBarrier
 
-
 % ============================================================
 % 4. PROPOSED METHOD
 % ============================================================
 
 \section{Proposed Method}
 \label{sec:method}
+
 \subsection{Overview Architecture}
-Figure~\ref{fig} illustrates the overall architecture of the proposed pseudo-color mapping framework, starting with the chest X-ray images, metadata, and patient-level cohort and split manifests stored in Google Drive. The images are imported, verified against the dataset records, cached locally, and preprocessed before being passed through two parallel processing paths. The first path implements the conventional fixed-LUT baseline, where the original grayscale intensities are directly mapped to colors using the Viridis colormap. The second path represents the proposed content-aware approach, in which a saliency estimation algorithm generates a saliency map that is subsequently combined with the original grayscale image to produce a content-aware colored representation. Finally, the outputs from both paths are forwarded to a common evaluation stage, where the original grayscale images, baseline results, and proposed outputs are visualized and compared using the defined evaluation criteria. This architecture enables a consistent comparison between conventional intensity-based mapping and the proposed saliency-guided approach using the same input images.
+
+Figure 2 illustrates the overall architecture of the proposed pseudo-color mapping framework, starting with the chest X-ray images, metadata, and patient-level cohort and split manifests stored in Google Drive. The images are imported, verified against the dataset records, cached locally, and preprocessed before being passed through two parallel processing paths. The first path implements the conventional fixed-LUT baseline, where the original grayscale intensities are directly mapped to colors using the Viridis colormap. The second path represents the proposed content-aware approach, in which a saliency estimation algorithm generates a saliency map that is subsequently combined with the original grayscale image to produce a content-aware colored representation. Finally, the outputs from both paths are forwarded to a common evaluation stage, where the original grayscale images, baseline results, and proposed outputs are visualized and compared using the defined evaluation criteria. This architecture enables a consistent comparison between conventional intensity-based mapping and the proposed saliency-guided approach using the same input images.
 
 \begin{figure}[htbp]
 \centering
@@ -384,7 +387,160 @@ Figure~\ref{fig} illustrates the overall architecture of the proposed pseudo-col
 \end{figure}
 \FloatBarrier
 
-%% Kiro
+
+\subsection{Saliency Estimation Process}
+
+The main objective of this part is to estimate the saliency of medical grayscale images, specifically chest X-ray images, by identifying the regions that contribute most to disease classification. To achieve this, we use a CNN-based classifier, specifically ResNet50, trained on the NIH ChestX-ray14 dataset to recognize different thoracic diseases. After training, Grad-CAM is applied to explain the model's predictions by highlighting the image regions that have the greatest influence on its decisions. The resulting saliency maps represent the spatial importance of different image regions and will be used as guidance for the next part of our project, which focuses on content-aware pseudo-color mapping.
+
+\vspace{0.5cm}
+\noindent\textbf{Saliency Estimation Process:}
+
+\subsubsection{CNN-Based Disease Classification}
+
+A CNN architecture, specifically ResNet50, is used to learn visual features from chest X-ray images.
+
+The model is trained using disease labels to recognize patterns associated with different thoracic conditions.
+
+The classification process consists of:
+
+\begin{enumerate}
+    \item Extracting visual features through convolutional layers.
+    \item Learning disease-related patterns.
+    \item Producing prediction probabilities for the 14 disease categories.
+\end{enumerate}
+
+% Figure 3: ResNet50 architecture
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/resnet.jpeg}
+    \caption{ResNet50 architecture used for chest X-ray disease classification.}
+    \label{fig:Resnet50}
+\end{figure}
+
+\subsubsection{Applying Grad-CAM for Explainability}
+
+After training the classifier, Grad-CAM is applied to understand which image regions contribute to its predictions.
+
+Instead of simply producing a disease label, the technique generates a visual explanation of the model's decision.
+
+Grad-CAM works by:
+\begin{itemize}
+    \item Selecting a disease prediction to explain.
+    \item Extracting feature maps from the final convolutional layer.
+    \item Calculating gradients associated with the selected disease.
+    \item Assigning importance weights to the feature maps.
+    \item Combining the weighted feature maps to generate a heatmap.
+\end{itemize}
+
+% Figure 4: Grad-CAM architecture
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/gradcam_architecture.jpeg}
+    \caption{Grad-CAM workflow for generating visual explanations.}
+    \label{fig:placeholder}
+\end{figure}
+
+\subsubsection{Saliency Map Generation}
+
+The Grad-CAM heatmap is resized to match the original X-ray dimensions and normalized to values between 0 and 1.
+
+The resulting saliency map represents the spatial importance of different image regions.
+
+\begin{itemize}
+    \item High saliency values indicate regions that strongly contribute to the selected classification.
+    \item Low saliency values indicate regions with less positive contribution.
+\end{itemize}
+
+The generated map provides a spatial representation of the classifier's explanations and can guide subsequent image processing.
+
+% Figure 5: Saliency visualization
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/saliency_visualization.jpeg}
+    \caption{Original chest X-ray, Grad-CAM heatmap, and resulting saliency visualization.}
+    \label{fig:saliency}
+\end{figure}
+
+\subsection{Complete Workflow Diagram}
+
+The following diagram summarizes the complete workflow of the saliency estimation stage.
+
+% Figure 6: Complete workflow diagram
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.65cm,
+    process/.style={
+        rectangle,
+        rounded corners,
+        draw=black,
+        fill=blue!8,
+        text width=5cm,
+        minimum height=0.8cm,
+        align=center,
+        font=\small
+    },
+    arrow/.style={
+        ->,
+        thick,
+        >=stealth
+    }
+]
+
+\node (dataset) [process] {NIH ChestX-ray14 Dataset};
+\node (model) [process, below=of dataset] {CNN Model (ResNet50)};
+\node (training) [process, below=of model] {Model Training};
+\node (classification) [process, below=of training] {Disease Classification};
+\node (trained) [process, below=of classification] {Trained CNN Model};
+\node (gradcam) [process, below=of trained] {Grad-CAM Explainability};
+\node (features) [process, below=of gradcam] {Feature Maps + Gradients};
+\node (heatmap) [process, below=of features] {Grad-CAM Heatmap};
+\node (saliency) [process, below=of heatmap] {Saliency Map Generation};
+\node (output) [process, below=of saliency, fill=green!15] {Final Saliency Map};
+
+\draw[arrow] (dataset) -- (model);
+\draw[arrow] (model) -- (training);
+\draw[arrow] (training) -- (classification);
+\draw[arrow] (classification) -- (trained);
+\draw[arrow] (trained) -- (gradcam);
+\draw[arrow] (gradcam) -- (features);
+\draw[arrow] (features) -- (heatmap);
+\draw[arrow] (heatmap) -- (saliency);
+\draw[arrow] (saliency) -- (output);
+
+\node (next) [process, below=0.8cm of output, fill=orange!15]
+{Second Part: Content-Aware Pseudo-Color Mapping};
+
+\draw[arrow] (output) -- (next);
+
+\end{tikzpicture}
+\caption{Complete workflow of the proposed saliency estimation stage.}
+\label{fig:saliency_workflow}
+\end{figure}
+\newpage
+At the end of this stage, we expect to obtain three main outputs:
+
+% Table 3: Expected outputs
+\begin{table}[H]
+\centering
+\caption{Expected outputs of the saliency estimation stage.}
+\label{tab:expected_outputs}
+\begin{tabular}{|p{4cm}|p{9cm}|}
+\hline
+\textbf{Output} & \textbf{Description} \\
+\hline
+Trained CNN Classifier &
+A model capable of predicting thoracic disease categories. \\
+\hline
+Grad-CAM Heatmaps &
+Visual explanations highlighting regions contributing to disease predictions. \\
+\hline
+Saliency Maps &
+Normalized importance maps representing the spatial significance of image regions. \\
+\hline
+\end{tabular}
+\end{table}
+
 
 % ============================================================
 % 5. FEASIBILITY & COMPUTE PLAN
@@ -398,7 +554,6 @@ The project is designed to be CPU-OK and feasible on a laptop-class machine with
 The initial fine-tuning experiments are estimated to require approximately 4 to 8 hours per experiment using CPU-based processing, assuming 5 to10 training epochs. Grad-CAM generation and subsequent pseudo-color mapping and evaluation operations will require additional processing time, depending on the number of images evaluated.\\
 
 The proposed implementation and evaluation are therefore considered feasible within the project window using a laptop-class machine.
-
 
 % ------------------------------------------------------------
 % 5.1 Minimum Viable Deliverable
@@ -436,6 +591,7 @@ If the MVP is completed on schedule, the following additional objectives will be
 
 \section{Risk Assessment}
 \label{sec:risk}
+
 The following risks have been identified, together with their proposed mitigation strategies:
 \begin{itemize}[leftmargin=*]
 
@@ -447,8 +603,6 @@ The following risks have been identified, together with their proposed mitigatio
 
     \item \textbf{Risk 3. Human-Study Participation:} Limited participant availability or inconsistent responses may affect the reliability of the human-centered evaluation.\\ 
     \textit{Mitigation/Fallback}: Prepare a simple structured experiment with predefined visual tasks and consistent presentation conditions. If participant recruitment becomes impractical, prioritize the quantitative evaluation methods included in the MVP.
-
-
 
 \end{itemize}
 
@@ -507,13 +661,13 @@ centered evaluation if feasible. \\
 \bottomrule
 \end{tabularx}
 \end{table}
-All team members will contribute to integration, comparative analysis, interpretation of results, and final report preparation
 
+All team members will contribute to integration, comparative analysis, interpretation of results, and final report preparation
 
 % ============================================================
 % REFERENCES
 % ============================================================
-
+\newpage
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 
