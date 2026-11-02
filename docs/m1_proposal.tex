@@ -1,125 +1,309 @@
+
 \documentclass[11pt]{article}
 
 % ============================================================
-% Milestone 1 -- Project Proposal & Literature Review Template
-% DIP Team Project
+% Cover & Main Document Setup
 % ============================================================
-\usepackage[margin=1in]{geometry}
-\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
+\usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
 \usepackage[round]{natbib}
-\usepackage{hyperref}
-\hypersetup{colorlinks=true, linkcolor=blue!50!black, citecolor=blue!50!black, urlcolor=blue!50!black}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!50!black,
+    citecolor=blue!50!black,
+    urlcolor=blue!50!black
+}
 
 \newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
 
-\title{\LARGE Project Proposal \& Literature Review \\[4pt]
-\large \todo{Project Title}}
-\author{
-  \todo{Student A Full Name} \and
-  \todo{Student B Full Name} \and
-  \todo{Student C Full Name}
-}
-\date{Milestone 1 --- \todo{Date} \\{} [COURSE CODE] --- Digital Image Processing}
 
 \begin{document}
+
+% ============================================================
+% COVER PAGE
+% ============================================================
+\begin{titlepage}
+    \centering
+
+    \includegraphics[width=4.5cm]{asu_logo.png}\\[1cm]
+
+    {\Huge \textbf{Content-Aware Pseudo-Color Mapping for
+    Scientific/Medical Grayscale Images}}\\[1.5cm]
+
+    {\large \textbf{Advanced Digital Image and Video Processing
+    (CSE 681)}}\\[0.5cm]
+
+    {\large \textbf{Milestone 1}}\\[1cm]
+
+    {\small
+    \textbf{Project Repo:}
+    \href{https://github.com/abdulrahman-ragab/content-aware-pseudocolor}
+    {\texttt{GitHub Repository}}
+    }\\[1.5cm]
+
+    % Team:
+    \begin{tabularx}{0.8\textwidth}{|X|c|}
+        \hline
+        \textbf{Team Members} & \textbf{ID} \\ \hline
+        Marwan Hatem Hosny Mobarak & 2600308 \\ \hline
+        Kirolos Thabet Fouad Benjamin & 2600316 \\ \hline
+        Abdulrahman Mohamed Abdullah Ragab & 2600286 \\ \hline
+    \end{tabularx}
+
+    \vspace{1.5cm}
+
+    {\large \textbf{Submitted To:}}\\[0.3cm]
+
+    Dr. Hazem Abbass\\
+    Dr. Mahmoud Khalil
+
+    \vfill
+
+\end{titlepage}
+
+\newpage
+
+% ============================================================
+% TITLE & MAIN DOCUMENT
+% ============================================================
+
+\title{
+    \LARGE Project Proposal \& Literature Review \\[6pt]
+    \large Content-Aware Pseudo-Color Mapping for
+    Scientific/Medical Grayscale Images
+}
+
+\author{
+    Marwan Hatem Hosny Mobarak
+    \and
+    Kirolos Thabet Fouad Benjamin
+    \and
+    Abdulrahman Mohamed Abdullah Ragab
+}
+
+\date{
+    Milestone 1 --- 2 November 2026 \\[2pt]
+    CSE 681 --- Digital Image Processing
+}
+
 \maketitle
 
+% ============================================================
+% ABSTRACT
+% ============================================================
+
 \begin{abstract}
-\todo{3--5 sentences: what problem are you tackling, why does it matter, what is your
-planned approach, and what public dataset/baseline will you use. Write this last.}
+
+3--5 sentences: what problem are you tackling, why does it matter,
+what is your planned approach, and what public dataset/baseline
+will you use. Write this last.
+
 \end{abstract}
+
+\noindent
+\todo{First Version abstract: revise after completing the
+implementation and evaluation experiments to reflect the actual
+methods and findings.}
+
+% ============================================================
+% 1. PROBLEM STATEMENT & MOTIVATION
+% ============================================================
 
 \section{Problem Statement \& Motivation}
 \label{sec:motivation}
-\todo{What image-processing problem are you solving? Why is it interesting or useful?
-How does it connect to material from the course (name the week/topic)? 1 paragraph.}
+
+What image-processing problem are you solving? Why is it interesting
+or useful? How does it connect to material from the course
+(name the week/topic)? 1 paragraph.
+
+% ============================================================
+% 2. RELATED WORK
+% ============================================================
 
 \section{Related Work}
 \label{sec:related}
-\todo{Summarize at least 4 references, at least 2 of which should be from 2023--2026.
-Use the table below as a starting organizer, then write 1--2 paragraphs of prose
-connecting them to your plan.}
 
-\begin{table}[h]
+Summarize at least 4 references, at least 2 of which should be
+from 2023--2026. Use the table below as a starting organizer,
+then write 1--2 paragraphs of prose connecting them to your plan.
+
+\begin{table}[htbp]
 \centering
 \caption{Key references.}
 \label{tab:refs}
-\begin{tabular}{@{}p{0.30\linewidth}p{0.12\linewidth}p{0.45\linewidth}@{}}
+
+\begin{tabularx}{\textwidth}{
+    @{}
+    p{0.30\linewidth}
+    p{0.12\linewidth}
+    X
+    @{}
+}
 \toprule
-\textbf{Reference} & \textbf{Year} & \textbf{Relevance to this project} \\
+\textbf{Reference} &
+\textbf{Year} &
+\textbf{Relevance to this project} \\
 \midrule
+
 \citep{example2024} & 2024 & \todo{one sentence} \\
-\citep{example2018}  & 2018 & \todo{one sentence} \\
+
+\citep{example2018} & 2018 & \todo{one sentence} \\
+
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
+
+% ============================================================
+% 3. DATASET & BASELINE PLAN
+% ============================================================
 
 \section{Dataset \& Baseline Plan}
 \label{sec:data}
-\todo{Name the public dataset(s), give exact size/subset you will use, and the license.
-State exactly which baseline (classical or prior learned method) you will reproduce
-and compare against.}
 
-\begin{table}[h]
+Name the public dataset(s), give exact size/subset you will use,
+and the license. State exactly which baseline (classical or
+prior learned method) you will reproduce and compare against.
+
+\begin{table}[htbp]
 \centering
 \caption{Dataset summary.}
 \label{tab:data}
-\begin{tabular}{@{}lll@{}}
+
+\begin{tabularx}{\textwidth}{
+    @{}
+    p{0.22\linewidth}
+    X
+    p{0.32\linewidth}
+    @{}
+}
 \toprule
-\textbf{Dataset} & \textbf{Subset used} & \textbf{Link} \\
+\textbf{Dataset} &
+\textbf{Subset Used} &
+\textbf{Link} \\
 \midrule
-\todo{name} & \todo{e.g., 800 train / 100 val crops} & \todo{URL} \\
+
+\todo{name} &
+\todo{e.g., 800 train / 100 val crops} &
+\todo{URL} \\
+
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
+
+% ============================================================
+% 4. PROPOSED METHOD
+% ============================================================
 
 \section{Proposed Method}
 \label{sec:method}
-\todo{Sketch your planned approach: architecture diagram or pseudocode, what is novel
-or extended relative to the baseline, and why you expect it to work.}
+
+Sketch your planned approach: architecture diagram or pseudocode,
+what is novel or extended relative to the baseline, and why you
+expect it to work.
+
+% ============================================================
+% 5. FEASIBILITY & COMPUTE PLAN
+% ============================================================
 
 \section{Feasibility \& Compute Plan}
 \label{sec:feasibility}
-\todo{State your compute tier (CPU-OK / GPU-light), expected training time per
-experiment, and confirm this fits a laptop-class machine within the project window.}
+
+State your compute tier (CPU-OK / GPU-light), expected training
+time per experiment, and confirm this fits a laptop-class machine
+within the project window.
+
+% ------------------------------------------------------------
+% 5.1 Minimum Viable Deliverable
+% ------------------------------------------------------------
 
 \subsection{Minimum Viable Deliverable (MVP)}
-\todo{The smallest version of this project that still produces a valid, reportable
-comparison against the baseline.}
+
+The smallest version of this project that still produces a valid,
+reportable comparison against the baseline.
+
+% ------------------------------------------------------------
+% 5.2 Stretch Goal
+% ------------------------------------------------------------
 
 \subsection{Stretch Goal}
+
 \todo{What you will attempt if the MVP is on track by Week 5--6.}
+
+% ============================================================
+% 6. RISK ASSESSMENT
+% ============================================================
 
 \section{Risk Assessment}
 \label{sec:risk}
+
 \begin{itemize}[leftmargin=*]
-  \item \todo{Risk 1 and its mitigation / fallback.}
-  \item \todo{Risk 2 and its mitigation / fallback.}
+
+    \item \todo{Risk 1 and its mitigation / fallback.}
+
+    \item \todo{Risk 2 and its mitigation / fallback.}
+
 \end{itemize}
+
+% ============================================================
+% 7. WORK BREAKDOWN
+% ============================================================
 
 \section{Work Breakdown}
 \label{sec:workbreakdown}
-\begin{table}[h]
+
+\begin{table}[htbp]
 \centering
-\caption{Milestone task allocation (see also the course project catalog entry for this
-project).}
+\caption{Milestone task allocation.}
 \label{tab:tasks}
-\begin{tabular}{@{}p{0.12\linewidth}p{0.26\linewidth}p{0.26\linewidth}p{0.26\linewidth}@{}}
+
+\begin{tabularx}{\textwidth}{
+    @{}
+    p{0.12\linewidth}
+    X
+    X
+    X
+    @{}
+}
 \toprule
-\textbf{Milestone} & \textbf{Student A} & \textbf{Student B} & \textbf{Student C} \\
+
+\textbf{Milestone} &
+\textbf{Student A} &
+\textbf{Student B} &
+\textbf{Student C} \\
+
 \midrule
-M1 (Wk 3) & \todo{task} & \todo{task} & \todo{task} \\
-M2 (Wk 6) & \todo{task} & \todo{task} & \todo{task} \\
-M3 (Wk 9) & \todo{task} & \todo{task} & \todo{task} \\
+
+M1 (Wk 3) &
+\todo{task} &
+\todo{task} &
+\todo{task} \\
+
+M2 (Wk 6) &
+\todo{task} &
+\todo{task} &
+\todo{task} \\
+
+M3 (Wk 9) &
+\todo{task} &
+\todo{task} &
+\todo{task} \\
+
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
+
+% ============================================================
+% REFERENCES
+% ============================================================
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}
